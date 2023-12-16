@@ -1,0 +1,38 @@
+pragma solidity ^0.5.16;
+
+contract EducationCertificate {
+    struct Certificate {
+        string studentName;
+        string courseName;
+        uint256 dateIssued;
+        bool isRevoked;
+    }
+  
+    mapping (bytes32 => Certificate) public certificates;
+    address public issuer;
+
+    constructor() public {
+        issuer = msg.sender;
+    }
+
+    function issueCertificate(bytes32 _certificateId, string memory _studentName, string memory _courseName) public {
+        require(msg.sender == issuer, "Only issuer can issue certificates");
+        Certificate memory newCertificate = Certificate({
+            studentName: _studentName,
+            courseName: _courseName,
+            dateIssued: now,
+            isRevoked: false
+        });
+        certificates[_certificateId] = newCertificate;
+    }
+
+    function revokeCertificate(bytes32 _certificateId) public {
+        require(msg.sender == issuer, "Only issuer can revoke certificates");
+        certificates[_certificateId].isRevoked = true;
+    }
+
+    function verifyCertificate(bytes32 _certificateId) public view returns (string memory, string memory, uint256, bool) {
+        Certificate memory certificateToVerify = certificates[_certificateId];
+        return (certificateToVerify.studentName, certificateToVerify.courseName, certificateToVerify.dateIssued, certificateToVerify.isRevoked);
+    }
+}
